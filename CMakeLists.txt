@@ -66,3 +66,10 @@ add_test(
             ${Python3_EXECUTABLE}
             ${CMAKE_SOURCE_DIR}/tests/benchmark_smoke_test.py
 )
+
+add_test(
+    NAME tcp_benchmark_smoke
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/tcp_benchmark_smoke_test.py
+            $<TARGET_FILE:latency_server>
+)

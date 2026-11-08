@@ -128,3 +128,25 @@ Results depend on CPU, compiler, operating system, and virtualization.
 - Linux perf and eBPF diagnostics
 - Performance optimization based on profiling
 - Reproducible benchmark reports
+
+
+## TCP End-to-End Benchmark
+
+Run the TCP benchmark:
+
+```sh
+python3 benchmarks/tcp_benchmark.py --server ./build/latency_server
+```
+
+The benchmark measures:
+
+- TCP round-trip latency for crossing buy orders
+- p50, p95, and p99 latency
+- Concurrent TCP throughput
+- Response correctness and final order book consistency
+
+The latency workload uses one outstanding request at a time.
+
+The throughput workload uses multiple clients and batched requests.
+
+Measurements include TCP, scheduling, synchronization, and client-side overhead. Results are environment-dependent and should not be interpreted as matching engine latency alone.
