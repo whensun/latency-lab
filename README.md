@@ -40,8 +40,3 @@ ctest --test-dir build --output-on-failure
 - Performance benchmarking
 - Linux perf and eBPF diagnostics
 - Reproducible performance evaluation
-
-## Limitations
-
-This is an educational systems engineering project.
-It is not intended for live financial trading.

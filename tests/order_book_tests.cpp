@@ -1,4 +1,3 @@
-
 #include "latency_lab/order_book.hpp"
 
 #include <functional>
