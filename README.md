@@ -75,4 +75,3 @@ It shares one in-memory order book across sequential client connections.
 - Performance benchmarking
 - Linux perf and eBPF diagnostics
 - Reproducible performance evaluation
-- 
