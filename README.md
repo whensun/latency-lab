@@ -40,3 +40,25 @@ ctest --test-dir build --output-on-failure
 - Performance benchmarking
 - Linux perf and eBPF diagnostics
 - Reproducible performance evaluation
+
+## TCP Server
+
+Start the TCP server:
+
+```sh
+./build/latency_server
+```
+
+The server listens on 127.0.0.1:9000 by default.
+
+Supported commands:
+- BUY <id> <price> <quantity>
+- SELL <id> <price> <quantity>
+- CANCEL <id>
+- BOOK
+- QUIT
+Each command must end with a newline.
+Each response ends with an END line.
+
+The server currently handles one client at a time.
+It shares one in-memory order book across sequential client connections.
