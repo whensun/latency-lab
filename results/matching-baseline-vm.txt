@@ -1,0 +1,11 @@
+samples=50000
+warmup_pairs=5000
+latency_scope=crossing_buy_matching_one_resting_sell
+p50_ns=110
+p95_ns=111
+p99_ns=210
+mean_ns=119.13
+throughput_scope=single_thread_sell_then_buy_pairs
+throughput_orders_per_sec=11949131.59
+matched_quantity=50000
+throughput_matched_quantity=50000

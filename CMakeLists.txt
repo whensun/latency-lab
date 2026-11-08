@@ -54,3 +54,15 @@ add_test(
             ${Python3_EXECUTABLE}
             ${CMAKE_SOURCE_DIR}/tests/concurrent_server_tests.py
 )
+
+add_executable(latency_bench benchmarks/matching_benchmark.cpp)
+target_link_libraries(latency_bench PRIVATE order_book)
+target_compile_options(latency_bench PRIVATE -Wall -Wextra -Wpedantic)
+
+add_test(
+    NAME matching_benchmark_smoke
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_BENCH_BIN=$<TARGET_FILE:latency_bench>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/benchmark_smoke_test.py
+)
