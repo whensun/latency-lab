@@ -8,15 +8,85 @@
 #include <algorithm>
 #include <cerrno>
 #include <cctype>
+#include <condition_variable>
 #include <cstring>
+#include <future>
 #include <iostream>
+#include <memory>
+#include <mutex>
+#include <queue>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <thread>
 
 namespace {
 
 constexpr std::size_t max_line_length = 4096;
+
+class MatchingWorker {
+public:
+    MatchingWorker() : worker_([this] { run(); }) {}
+
+    ~MatchingWorker() {
+        {
+            std::lock_guard lock(mutex_);
+            stopping_ = true;
+        }
+        ready_.notify_one();
+        worker_.join();
+    }
+
+    MatchingWorker(const MatchingWorker&) = delete;
+    MatchingWorker& operator=(const MatchingWorker&) = delete;
+
+    std::future<latency_lab::CommandResult> submit(std::string line) {
+        std::packaged_task<latency_lab::CommandResult()> task(
+            [this, line = std::move(line)]() mutable {
+                return processor_.process(std::move(line));
+            }
+        );
+        auto result = task.get_future();
+
+        {
+            std::lock_guard lock(mutex_);
+            queue_.push(std::move(task));
+        }
+        ready_.notify_one();
+        return result;
+    }
+
+private:
+    void run() {
+        while (true) {
+            std::packaged_task<latency_lab::CommandResult()> task;
+
+            {
+                std::unique_lock lock(mutex_);
+                ready_.wait(lock, [this] {
+                    return stopping_ || !queue_.empty();
+                });
+
+                if (queue_.empty() && stopping_) {
+                    return;
+                }
+
+                task = std::move(queue_.front());
+                queue_.pop();
+            }
+
+            task();
+        }
+    }
+
+    latency_lab::CommandProcessor processor_;
+    std::mutex mutex_;
+    std::condition_variable ready_;
+    std::queue<std::packaged_task<latency_lab::CommandResult()>> queue_;
+    bool stopping_ = false;
+    std::thread worker_;
+};
 
 bool send_all(int client, std::string_view message) {
     std::size_t offset = 0;
@@ -43,7 +113,7 @@ bool send_all(int client, std::string_view message) {
     return true;
 }
 
-void serve_client(int client, latency_lab::CommandProcessor& processor) {
+void serve_client(int client, const std::shared_ptr<MatchingWorker>& worker) {
     std::string pending;
     char buffer[4096];
 
@@ -67,10 +137,10 @@ void serve_client(int client, latency_lab::CommandProcessor& processor) {
                 return;
             }
 
-            const std::string line = pending.substr(0, newline);
+            std::string line = pending.substr(0, newline);
             pending.erase(0, newline + 1);
 
-            const auto result = processor.process(line);
+            const auto result = worker->submit(std::move(line)).get();
 
             if (!send_all(client, result.output + "END\n")) {
                 return;
@@ -100,9 +170,7 @@ unsigned short parse_port(int argc, char** argv) {
     const std::string value = argv[1];
 
     if (value.empty() || !std::all_of(
-        value.begin(),
-        value.end(),
-        [](unsigned char c) {
+        value.begin(), value.end(), [](unsigned char c) {
             return std::isdigit(c) != 0;
         }
     )) {
@@ -150,9 +218,7 @@ int main(int argc, char** argv) {
         socklen_t size = sizeof(address);
 
         if (getsockname(
-            listener,
-            reinterpret_cast<sockaddr*>(&address),
-            &size
+            listener, reinterpret_cast<sockaddr*>(&address), &size
         ) < 0) {
             const std::string error = std::strerror(errno);
             close(listener);
@@ -162,7 +228,7 @@ int main(int argc, char** argv) {
         std::cout << "LISTENING 127.0.0.1:"
                   << ntohs(address.sin_port) << std::endl;
 
-        latency_lab::CommandProcessor processor;
+        auto worker = std::make_shared<MatchingWorker>();
 
         while (true) {
             const int client = accept(listener, nullptr, nullptr);
@@ -177,8 +243,20 @@ int main(int argc, char** argv) {
                 throw std::runtime_error(error);
             }
 
-            serve_client(client, processor);
-            close(client);
+            try {
+                std::thread([client, worker] {
+                    try {
+                        serve_client(client, worker);
+                    } catch (const std::exception& error) {
+                        std::cerr << "CLIENT ERROR " << error.what() << '\n';
+                    }
+                    close(client);
+                }).detach();
+            } catch (const std::system_error& error) {
+                std::cerr << "CLIENT THREAD ERROR "
+                          << error.what() << '\n';
+                close(client);
+            }
         }
     } catch (const std::exception& error) {
         std::cerr << "ERROR " << error.what() << '\n';

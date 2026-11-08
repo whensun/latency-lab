@@ -20,6 +20,9 @@ target_compile_options(latency_server PRIVATE -Wall -Wextra -Wpedantic)
 add_executable(order_book_tests tests/order_book_tests.cpp)
 target_link_libraries(order_book_tests PRIVATE order_book)
 
+find_package(Threads REQUIRED)
+target_link_libraries(latency_server PRIVATE Threads::Threads)
+
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 enable_testing()
@@ -42,4 +45,12 @@ add_test(
             "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
             ${Python3_EXECUTABLE}
             ${CMAKE_SOURCE_DIR}/tests/tcp_server_tests.py
+)
+
+add_test(
+    NAME concurrent_server_tests
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/concurrent_server_tests.py
 )
