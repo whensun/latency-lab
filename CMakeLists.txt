@@ -73,3 +73,22 @@ add_test(
             ${CMAKE_SOURCE_DIR}/tests/tcp_benchmark_smoke_test.py
             $<TARGET_FILE:latency_server>
 )
+
+add_test(
+    NAME tcp_server_nodelay_tests
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/tcp_server_tests.py
+)
+
+add_test(
+    NAME concurrent_nodelay_tests
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/concurrent_server_tests.py
+)
+

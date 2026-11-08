@@ -4,6 +4,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <cstdlib>
+#include <netinet/tcp.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -242,7 +244,26 @@ int main(int argc, char** argv) {
                 close(listener);
                 throw std::runtime_error(error);
             }
-
+            
+            const char* setting = std::getenv("LATENCY_TCP_NODELAY");
+            
+            if (setting != nullptr && std::string_view(setting) == "1") {
+                const int enabled = 1;
+            
+                if (setsockopt(
+                    client,
+                    IPPROTO_TCP,
+                    TCP_NODELAY,
+                    &enabled,
+                    sizeof(enabled)
+                ) != 0) {
+                    std::cerr << "TCP_NODELAY ERROR "
+                              << std::strerror(errno) << '\n';
+                    close(client);
+                    continue;
+                }
+            }
+            
             try {
                 std::thread([client, worker] {
                     try {
