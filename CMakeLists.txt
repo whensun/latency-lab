@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.16)
 project(latency_lab LANGUAGES CXX)
 
@@ -15,3 +14,12 @@ target_link_libraries(order_book_tests PRIVATE order_book)
 
 enable_testing()
 add_test(NAME order_book_tests COMMAND order_book_tests)
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+add_test(
+    NAME differential_tests
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/differential_test.py
+            $<TARGET_FILE:latency_cli>
+)
