@@ -1,0 +1,31 @@
+{
+  "worker_batching": 1,
+  "clients": 8,
+  "orders_per_client": 1000,
+  "verified_trades": 8000,
+  "completion_ms": [
+    22.705,
+    26.45,
+    23.902,
+    22.28,
+    20.206,
+    18.546,
+    27.323,
+    25.512
+  ],
+  "median_completion_ms": 23.304,
+  "max_completion_ms": 27.323,
+  "min_completion_ms": 18.546,
+  "completion_ratio": 1.473,
+  "midpoint_progress": [
+    616,
+    552,
+    475,
+    0,
+    520,
+    520,
+    471,
+    488
+  ],
+  "midpoint_balance": 0.8678
+}

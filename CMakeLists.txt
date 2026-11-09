@@ -122,3 +122,22 @@ add_test(
             ${CMAKE_SOURCE_DIR}/tests/batch_server_tests.py
 )
 
+add_test(
+    NAME concurrent_conservation_off
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_WORKER_BATCH=0"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/concurrent_conservation_test.py
+)
+
+add_test(
+    NAME concurrent_conservation_on
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_WORKER_BATCH=1"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/concurrent_conservation_test.py
+)

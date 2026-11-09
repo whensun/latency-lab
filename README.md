@@ -274,6 +274,96 @@ results, which showed fewer context switches with batching.
 These eBPF results are from one run per configuration.
 Additional runs are needed to evaluate their stability.
 
+## Final Performance Evaluation
+
+We evaluated client scaling, network batch sizes, concurrent
+correctness, and client progress balance on Ubuntu VirtualBox.
+
+All performance experiments used TCP_NODELAY enabled.
+
+### Client Scaling
+
+Five runs were conducted per configuration using 10,000
+commands per run and 20 order pairs per network batch.
+
+| Clients | Batching OFF | Batching ON | Speedup |
+|---|---:|---:|---:|
+| 1 | 17,138 orders/s | 125,910 orders/s | 7.35x |
+| 2 | 30,472 orders/s | 220,433 orders/s | 7.23x |
+| 4 | 57,188 orders/s | 231,496 orders/s | 4.05x |
+| 8 | 101,081 orders/s | 236,201 orders/s | 2.34x |
+
+Worker batching improved throughput across all tested client
+counts. Throughput with batching enabled showed limited
+additional growth beyond two concurrent clients.
+
+These results do not identify which system component limits
+further scaling.
+
+### Network Batch Scaling
+
+Five runs were conducted per configuration using four
+concurrent clients and 10,000 commands per run.
+
+| Network Batch | Worker OFF | Worker ON | Speedup |
+|---|---:|---:|---:|
+| 1 pair | 29,123 orders/s | 36,551 orders/s | 1.26x |
+| 5 pairs | 48,412 orders/s | 120,216 orders/s | 2.48x |
+| 10 pairs | 59,357 orders/s | 173,766 orders/s | 2.93x |
+| 20 pairs | 58,994 orders/s | 243,429 orders/s | 4.13x |
+| 40 pairs | 51,952 orders/s | 278,999 orders/s | 5.37x |
+
+The highest median throughput observed in this experiment
+was approximately 279,000 orders/s with worker batching
+enabled and 40 order pairs per network batch.
+
+Larger network batches may produce different results and
+were not evaluated.
+
+### Concurrent Correctness
+
+The concurrent conservation test uses eight TCP clients.
+Each client submits 100 SELL orders and 100 BUY orders.
+
+The test verifies:
+
+- Acceptance of all submitted orders
+- Exactly one trade per BUY order
+- Unique matching of all SELL orders
+- An empty final order book
+
+Both worker batching configurations passed.
+
+Each configuration was repeated 20 times without failures,
+covering 32,000 verified trades per configuration.
+
+These tests verify order conservation for the tested
+workloads, not all possible concurrent interleavings.
+
+### Client Fairness Evaluation
+
+Five runs were conducted per configuration using eight
+concurrent clients, with 1,000 SELL and 1,000 BUY orders
+per client.
+
+All 80,000 trades across both configurations were verified.
+
+| Metric | Batching OFF | Batching ON |
+|---|---:|---:|
+| Median client completion | 51.056 ms | 23.304 ms |
+| Median slowest client completion | 51.938 ms | 27.323 ms |
+| Median max/min completion ratio | 1.108x | 1.583x |
+| Median midpoint progress balance | 0.9954 | 0.8678 |
+
+Worker batching reduced client completion time but produced
+less balanced progress across clients.
+
+Progress balance was measured using Jain's fairness index
+at the midpoint of each run's completion interval.
+
+These results reflect client-observed behavior and do not
+establish formal scheduling fairness or starvation freedom.
+
 ## Planned Features
 
 - UDP market data distribution

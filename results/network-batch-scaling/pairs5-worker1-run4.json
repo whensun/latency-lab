@@ -1,0 +1,21 @@
+{
+  "benchmark": "localhost_tcp",
+  "latency": {
+    "samples": 100,
+    "warmup_pairs": 20,
+    "scope": "TCP BUY send to complete END response on localhost",
+    "p50_us": 95.101,
+    "p95_us": 161.055,
+    "p99_us": 207.772,
+    "mean_us": 114.247
+  },
+  "throughput": {
+    "clients": 4,
+    "pairs": 5000,
+    "commands": 10000,
+    "batch_pairs": 5,
+    "scope": "Full localhost TCP requests and responses with batching",
+    "elapsed_seconds": 0.083184,
+    "orders_per_second": 120215.92
+  }
+}
