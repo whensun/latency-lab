@@ -1,0 +1,238 @@
+Start testing: Nov 08 20:00 MST
+----------------------------------------------------------
+1/13 Testing: order_book_tests
+1/13 Test: order_book_tests
+Command: "/home/wensan/latency-lab/build-sanitize/order_book_tests"
+Directory: /home/wensan/latency-lab/build-sanitize
+"order_book_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS resting bid
+PASS buy crosses ask at maker price
+PASS sell crosses bid at maker price
+PASS partial maker fill
+PASS incoming remainder rests
+PASS best price first
+PASS FIFO at same price
+PASS cancel removes resting order
+PASS cancel preserves FIFO
+PASS noncrossing orders rest
+PASS invalid and duplicate input
+PASS reuse id after cancellation
+12 test cases passed
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"order_book_tests" end time: Nov 08 20:00 MST
+"order_book_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/13 Testing: differential_tests
+2/13 Test: differential_tests
+Command: "/usr/bin/python3" "/home/wensan/latency-lab/tests/differential_test.py" "/home/wensan/latency-lab/build-sanitize/latency_cli"
+Directory: /home/wensan/latency-lab/build-sanitize
+"differential_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS 25 scenarios with 200 randomized actions each
+Actions include add, match, cancel, invalid input, and book inspection
+<end of output>
+Test time =   0.65 sec
+----------------------------------------------------------
+Test Passed.
+"differential_tests" end time: Nov 08 20:00 MST
+"differential_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/13 Testing: tcp_server_tests
+3/13 Test: tcp_server_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/tcp_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"tcp_server_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS TCP commands, matching, partial reads, disconnects, state persistence
+<end of output>
+Test time =   0.15 sec
+----------------------------------------------------------
+Test Passed.
+"tcp_server_tests" end time: Nov 08 20:00 MST
+"tcp_server_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/13 Testing: concurrent_server_tests
+4/13 Test: concurrent_server_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/concurrent_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"concurrent_server_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS concurrent clients, shared order book, 48 parallel orders
+<end of output>
+Test time =   0.12 sec
+----------------------------------------------------------
+Test Passed.
+"concurrent_server_tests" end time: Nov 08 20:00 MST
+"concurrent_server_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/13 Testing: matching_benchmark_smoke
+5/13 Test: matching_benchmark_smoke
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_BENCH_BIN=/home/wensan/latency-lab/build-sanitize/latency_bench" "/usr/bin/python3" "/home/wensan/latency-lab/tests/benchmark_smoke_test.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"matching_benchmark_smoke" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS benchmark output, matching correctness, and latency ordering
+<end of output>
+Test time =   0.20 sec
+----------------------------------------------------------
+Test Passed.
+"matching_benchmark_smoke" end time: Nov 08 20:00 MST
+"matching_benchmark_smoke" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/13 Testing: tcp_benchmark_smoke
+6/13 Test: tcp_benchmark_smoke
+Command: "/usr/bin/python3" "/home/wensan/latency-lab/tests/tcp_benchmark_smoke_test.py" "/home/wensan/latency-lab/build-sanitize/latency_server"
+Directory: /home/wensan/latency-lab/build-sanitize
+"tcp_benchmark_smoke" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS TCP latency, concurrent throughput, and response correctness
+<end of output>
+Test time =   0.34 sec
+----------------------------------------------------------
+Test Passed.
+"tcp_benchmark_smoke" end time: Nov 08 20:00 MST
+"tcp_benchmark_smoke" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/13 Testing: tcp_server_nodelay_tests
+7/13 Test: tcp_server_nodelay_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_TCP_NODELAY=1" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/tcp_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"tcp_server_nodelay_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS TCP commands, matching, partial reads, disconnects, state persistence
+<end of output>
+Test time =   0.11 sec
+----------------------------------------------------------
+Test Passed.
+"tcp_server_nodelay_tests" end time: Nov 08 20:00 MST
+"tcp_server_nodelay_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/13 Testing: concurrent_nodelay_tests
+8/13 Test: concurrent_nodelay_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_TCP_NODELAY=1" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/concurrent_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"concurrent_nodelay_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS concurrent clients, shared order book, 48 parallel orders
+<end of output>
+Test time =   0.12 sec
+----------------------------------------------------------
+Test Passed.
+"concurrent_nodelay_tests" end time: Nov 08 20:00 MST
+"concurrent_nodelay_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/13 Testing: tcp_server_batch_tests
+9/13 Test: tcp_server_batch_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_WORKER_BATCH=1" "LATENCY_TCP_NODELAY=1" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/tcp_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"tcp_server_batch_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS TCP commands, matching, partial reads, disconnects, state persistence
+<end of output>
+Test time =   0.11 sec
+----------------------------------------------------------
+Test Passed.
+"tcp_server_batch_tests" end time: Nov 08 20:00 MST
+"tcp_server_batch_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/13 Testing: concurrent_batch_tests
+10/13 Test: concurrent_batch_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_WORKER_BATCH=1" "LATENCY_TCP_NODELAY=1" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/concurrent_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"concurrent_batch_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS concurrent clients, shared order book, 48 parallel orders
+<end of output>
+Test time =   0.11 sec
+----------------------------------------------------------
+Test Passed.
+"concurrent_batch_tests" end time: Nov 08 20:00 MST
+"concurrent_batch_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/13 Testing: batch_pipeline_tests
+11/13 Test: batch_pipeline_tests
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_WORKER_BATCH=1" "LATENCY_TCP_NODELAY=1" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/batch_server_tests.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"batch_pipeline_tests" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS 100 pipelined orders, FIFO matching, and QUIT boundary
+<end of output>
+Test time =   0.07 sec
+----------------------------------------------------------
+Test Passed.
+"batch_pipeline_tests" end time: Nov 08 20:00 MST
+"batch_pipeline_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/13 Testing: concurrent_conservation_off
+12/13 Test: concurrent_conservation_off
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_TCP_NODELAY=1" "LATENCY_WORKER_BATCH=0" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/concurrent_conservation_test.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"concurrent_conservation_off" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS clients=8
+PASS sell orders=800
+PASS buy orders=800
+PASS unique trades=800
+PASS final order book empty
+Median client completion=0.031077s
+Min client completion=0.030503s
+Max client completion=0.031521s
+<end of output>
+Test time =   0.16 sec
+----------------------------------------------------------
+Test Passed.
+"concurrent_conservation_off" end time: Nov 08 20:00 MST
+"concurrent_conservation_off" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/13 Testing: concurrent_conservation_on
+13/13 Test: concurrent_conservation_on
+Command: "/usr/bin/cmake" "-E" "env" "LATENCY_TCP_NODELAY=1" "LATENCY_WORKER_BATCH=1" "LATENCY_SERVER_BIN=/home/wensan/latency-lab/build-sanitize/latency_server" "/usr/bin/python3" "/home/wensan/latency-lab/tests/concurrent_conservation_test.py"
+Directory: /home/wensan/latency-lab/build-sanitize
+"concurrent_conservation_on" start time: Nov 08 20:00 MST
+Output:
+----------------------------------------------------------
+PASS clients=8
+PASS sell orders=800
+PASS buy orders=800
+PASS unique trades=800
+PASS final order book empty
+Median client completion=0.015105s
+Min client completion=0.014554s
+Max client completion=0.015268s
+<end of output>
+Test time =   0.13 sec
+----------------------------------------------------------
+Test Passed.
+"concurrent_conservation_on" end time: Nov 08 20:00 MST
+"concurrent_conservation_on" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 08 20:00 MST
