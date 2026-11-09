@@ -92,3 +92,33 @@ add_test(
             ${CMAKE_SOURCE_DIR}/tests/concurrent_server_tests.py
 )
 
+add_test(
+    NAME tcp_server_batch_tests
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_WORKER_BATCH=1"
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/tcp_server_tests.py
+)
+
+add_test(
+    NAME concurrent_batch_tests
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_WORKER_BATCH=1"
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/concurrent_server_tests.py
+)
+
+add_test(
+    NAME batch_pipeline_tests
+    COMMAND ${CMAKE_COMMAND} -E env
+            "LATENCY_WORKER_BATCH=1"
+            "LATENCY_TCP_NODELAY=1"
+            "LATENCY_SERVER_BIN=$<TARGET_FILE:latency_server>"
+            ${Python3_EXECUTABLE}
+            ${CMAKE_SOURCE_DIR}/tests/batch_server_tests.py
+)
+

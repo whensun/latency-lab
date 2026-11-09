@@ -177,3 +177,60 @@ Median p50 latency remained nearly unchanged, while median p99 latency was sligh
 The results suggest that TCP buffering behavior contributes to throughput limitations in the current request-response protocol. Additional profiling is needed to establish the underlying mechanism.
 
 These measurements are specific to the benchmark workload and virtualized environment.
+
+## Worker Batching Experiment
+
+The TCP server supports optional command batching:
+
+```sh
+LATENCY_TCP_NODELAY=1 LATENCY_WORKER_BATCH=1 ./build/latency_server
+```
+
+When enabled, the server groups up to 32 complete commands from one client into a single matching worker task.
+
+The matching worker processes each batch sequentially. Command order is preserved within each client, while interleaving between clients may change.
+
+### Experimental Results
+
+Five paired experiments were conducted on Ubuntu VirtualBox with four concurrent TCP clients, 10,000 commands per run, 20 order pairs per network batch, and `TCP_NODELAY` enabled.
+
+| Metric | Batching OFF | Batching ON |
+|---|---:|---:|
+| Median p50 latency | 123.52 us | 127.08 us |
+| Median p99 latency | 646.54 us | 671.05 us |
+| Median throughput | 48,578 orders/s | 220,524 orders/s |
+
+Batching improved median throughput by approximately 4.54x for this workload.
+
+The implementation combines multiple commands into one worker submission and multiple responses into one socket write. Further profiling is needed to quantify the contribution of each change.
+
+Results are specific to the tested workload and virtualized environment.
+
+### Linux Performance Profiling
+
+We used Linux `perf stat` to compare worker batching with
+`TCP_NODELAY` enabled.
+
+Each configuration was measured three times using four
+concurrent TCP clients and 100,000 commands per run.
+
+| Metric | Batching OFF | Batching ON | Change |
+|---|---:|---:|---:|
+| CPU time | 6,040 ms | 1,289 ms | -78.7% |
+| Context switches | 261,414 | 25,665 | -90.2% |
+| CPU migrations | 49,542 | 5,930 | -88.0% |
+| Page faults | 3,610 | 3,638 | +0.8% |
+| Elapsed time | 2.257 s | 0.673 s | -70.2% |
+| Median throughput | 44,819 orders/s | 195,174 orders/s | 4.35x |
+
+Performance counters include both the Python benchmark
+client and the C++ TCP server.
+
+The reduction in context switches is consistent with lower
+synchronization and scheduling overhead.
+
+Worker batching also combines multiple responses into
+fewer socket writes, so the individual contribution of
+each optimization has not yet been isolated.
+
+Measurements were collected inside an Ubuntu VirtualBox VM.
