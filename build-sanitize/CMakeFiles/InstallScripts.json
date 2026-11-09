@@ -1,7 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"/home/wensan/latency-lab/build-sanitize/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
