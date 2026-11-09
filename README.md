@@ -14,24 +14,28 @@ flowchart LR
     B[TCP Client B] --> T2[Client Thread B]
     C[TCP Client C] --> T3[Client Thread C]
 
-    T1 --> Q[Thread-Safe FIFO Queue]
-    T2 --> Q
-    T3 --> Q
+    T1 --> S1[Command / Batch Submission]
+    T2 --> S2[Command / Batch Submission]
+    T3 --> S3[Command / Batch Submission]
+
+    S1 --> Q[Thread-Safe FIFO Task Queue]
+    S2 --> Q
+    S3 --> Q
 
     Q --> W[Single Matching Worker]
     W --> P[Command Processor]
     P --> O[Shared Order Book]
 
-    W -. Responses .-> T1
-    W -. Responses .-> T2
-    W -. Responses .-> T3
+    W -. Results .-> T1
+    W -. Results .-> T2
+    W -. Results .-> T3
 ```
 
-Network clients communicate concurrently, while one matching worker processes queued commands sequentially.
+Network clients communicate concurrently, while a single matching worker processes queued tasks sequentially.
 
-The order book follows the queue submission order. Commands submitted simultaneously by different clients may arrive in different orders across runs.
+Each task contains one or more commands. Commands within a task execute sequentially, preserving their order. Tasks execute in queue submission order, but concurrent clients may produce different interleavings across runs.
 
-The local CLI and benchmark use their own order book instances, separate from the TCP server.
+The local CLI and benchmark use separate order book instances.
 
 ## Current Features
 
@@ -48,6 +52,9 @@ The local CLI and benchmark use their own order book instances, separate from th
 - Matching engine latency and throughput benchmarking
 - Interactive command-line interface
 - TCP end-to-end latency and throughput benchmarking
+- Configurable TCP_NODELAY
+- Configurable worker batching (up to 32 commands per task)
+- Batched TCP response handling
 
 ## Build
 
@@ -96,10 +103,15 @@ ctest --test-dir build --output-on-failure
 The test suites cover:
 
 - C++ order book correctness
-- Python differential testing
+- Python reference model and randomized differential testing
 - TCP server integration
 - Concurrent TCP clients
-- Benchmark smoke testing
+- Matching and TCP benchmark smoke testing
+- TCP_NODELAY regression testing
+- Worker batching regression testing
+- Pipelined commands, price-time priority, and QUIT handling
+
+All 11 CTest suites pass in the tested Ubuntu environment.
 
 ## Performance Benchmarking
 
@@ -122,13 +134,6 @@ Throughput measures repeated sell-then-buy cycles without networking.
 
 Results depend on CPU, compiler, operating system, and virtualization.
 
-## Planned Features
-
-- UDP market data distribution
-- Linux perf and eBPF diagnostics
-- Performance optimization based on profiling
-- Reproducible benchmark reports
-
 ## TCP End-to-End Benchmark
 
 Run the TCP benchmark:
@@ -142,13 +147,18 @@ The benchmark measures:
 - TCP round-trip latency for crossing buy orders
 - p50, p95, and p99 latency
 - Concurrent TCP throughput
-- Response correctness and final order book consistency
+- Expected response validation
+- Empty final order book verification
 
 The latency workload uses one outstanding request at a time.
 
 The throughput workload uses multiple clients and batched requests.
 
 Measurements include TCP, scheduling, synchronization, and client-side overhead. Results are environment-dependent and should not be interpreted as matching engine latency alone.
+
+Concurrent clients share the same order book. Orders from different clients may match each other, and their execution order depends on task submission and batching.
+
+The current benchmark does not perform full differential verification of concurrent execution traces.
 
 ## TCP_NODELAY Experiment
 
@@ -185,6 +195,11 @@ The TCP server supports optional command batching:
 ```sh
 LATENCY_TCP_NODELAY=1 LATENCY_WORKER_BATCH=1 ./build/latency_server
 ```
+
+Network batching and worker batching are separate mechanisms.
+Network batching controls how many order pairs the benchmark
+client sends together, while worker batching controls how many
+complete commands the server processes in one worker task.
 
 When enabled, the server groups up to 32 complete commands from one client into a single matching worker task.
 
@@ -234,3 +249,35 @@ fewer socket writes, so the individual contribution of
 each optimization has not yet been isolated.
 
 Measurements were collected inside an Ubuntu VirtualBox VM.
+
+### eBPF Scheduler Observability
+
+We used `bpftrace` with the Linux `sched_wakeup` and
+`sched_switch` tracepoints to observe server scheduling.
+
+The workload used four concurrent clients, 100,000 commands,
+and `TCP_NODELAY` enabled.
+
+| Metric | Batching OFF | Batching ON |
+|---|---:|---:|
+| Server wakeups | 129,986 | 11,459 |
+| TCP throughput | 62,011 orders/s | 269,238 orders/s |
+| Wakeup-to-running p50 bucket | 2-4 us | 1-2 us |
+| Wakeup-to-running p95 bucket | 16-32 us | 8-16 us |
+
+Worker batching reduced observed server wakeups by 91.2%
+in this measurement.
+
+The scheduler measurements support the earlier `perf stat`
+results, which showed fewer context switches with batching.
+
+These eBPF results are from one run per configuration.
+Additional runs are needed to evaluate their stability.
+
+## Planned Features
+
+- UDP market data distribution
+- Performance evaluation across client counts and batch sizes
+- Concurrent client fairness analysis
+- Additional correctness testing under concurrent workloads
+- Further profiling-guided optimization
